@@ -6,7 +6,7 @@ Bates, J. M., Fidino, M., Nowak-Boyd, L., Strausberger, B. M., Schmidt, K. A., a
 
 <div align="center"><img width="150" height="auto" src="./images/american_robin.png" alt="A drawing of a robin that Mason made." /></div>
 
-<div align="center"> <h2>Scripts</h2> </div>
+<div align="center"> <h2 border-bottom:"1px">Scripts</h2> </div>
 
 ---
 
