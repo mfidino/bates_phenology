@@ -1,6 +1,6 @@
 
 
-## This is the data and code for:
+### A repository for:
 
 Bates, J. M., Fidino, M., Nowak-Boyd, L., Strausberger, B. M., Schmidt, K. A., and Whelan, C. J. (in prep). Climate change affects nesting phenology of midwestern birds: comparison of modern field records with historical records obtained from museum collections.
 
