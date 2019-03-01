@@ -6,7 +6,7 @@ Bates, J. M., Fidino, M., Nowak-Boyd, L., Strausberger, B. M., Schmidt, K. A., a
 
 <div align="center"><img width="150" height="auto" src="./images/american_robin.png" alt="A drawing of a robin that Mason made." /></div>
 
-<center> <h2>Scripts 1</h2> </center>
+<center> <h2>Scripts</h2> </center>
 
 **bates_2017_calc_climate_residuals.R:** This script reads in the atmospheric CO2 data, fits a linear model to it (with year as the independent variable), and calculates the residuals from the model.
 These residuals are then used in our primary analysis.
@@ -17,7 +17,7 @@ These residuals are then used in our primary analysis.
 
 <div align="center"><img width="150" height="auto" src="./images/shrike.png" alt="A drawing of a shrike that Mason made." /></div>
 
-<center> <h2>Models 1</h2> </center>
+<center> <h2>Models</h2> </center>
 
 **This repository also has 2 JAGS models that we used for our analysis. They should be placed within the jags_models sub-folder of the working directory. These include:**
 
@@ -27,7 +27,7 @@ These residuals are then used in our primary analysis.
 
 <div align="center"><img width="150" height="auto" src="./images/blue_jay.png" alt="A drawing of a blue jay that Mason made." /></div>
 
-<center> <h2>Data 1</h2> </center>
+<center> <h2>Data</h2> </center>
 
 **There are three data files within the data sub-folder which are used in this analysis. They include:**
 
