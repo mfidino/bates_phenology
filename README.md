@@ -6,6 +6,8 @@ Bates, J. M., Fidino, M., Nowak-Boyd, L., Strausberger, B. M., Schmidt, K. A., a
 
 **This repository consists of 3 scripts used for analysis, model summary, and plotting. They are located within the working directory. These scripts include:**
 
+## Scripts ##
+
 **bates_2017_calc_climate_residuals.R:** This script reads in the atmospheric CO2 data, fits a linear model to it (with year as the independent variable), and calculates the residuals from the model.
 These residuals are then used in our primary analysis.
 
@@ -13,12 +15,15 @@ These residuals are then used in our primary analysis.
 
 **bates_2017_plotting.R:** This script can be used to generate the figures in the manuscript.
 
+## Models ##
 
 **This repository also has 2 JAGS models that we used for our analysis. They should be placed within the jags_models sub-folder of the working directory. These include:**
 
 **bates_2017_climate_resid_model.R:** This is the model that is called by `bates_2017_calc_climate_residuals.R`. 
 
 **bates_2017_robust_t_model.R:** This is the model that is called by `bates_2017_analysis_script.R`. 
+
+## Data ##
 
 **There are three data files within the data sub-folder which are used in this analysis. They include:**
 
