@@ -30,11 +30,8 @@ package_load(packs)
 # migt = species migratory status info
 # fdt = species nesting data
 migt <- read.csv("bates_2017_migratory_status.csv", header = TRUE)
-# remove bluebird
-migt <- migt[-which(migt$species=="EABL"),]
 migt$species <- factor(migt$species)
 fdt <- read.csv("bates_2017_bird_lay_dates.csv", header = TRUE)
-fdt <- fdt[-which(fdt$species=="EABL"),]
 fdt$species <- factor(fdt$species)
 
 # length of data
