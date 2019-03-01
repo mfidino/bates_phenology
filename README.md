@@ -14,20 +14,22 @@ These residuals are then used in our primary analysis.
 **bates_2017_analysis_script.R:** This script fits our robust to outlier model to bird nesting records.
 
 **bates_2017_plotting.R:** This script can be used to generate the figures in the manuscript.
+---
 
 <div align="center"><img width="150" height="auto" src="./images/shrike.png" alt="A drawing of a shrike that Mason made." /></div>
 
-<center> <h2>Models</h2> </center>
+<div align="center"> <h2>Models</h2> </div>
 
 **This repository also has 2 JAGS models that we used for our analysis. They should be placed within the jags_models sub-folder of the working directory. These include:**
 
 **bates_2017_climate_resid_model.R:** This is the model that is called by `bates_2017_calc_climate_residuals.R`. 
 
 **bates_2017_robust_t_model.R:** This is the model that is called by `bates_2017_analysis_script.R`. 
+---
 
 <div align="center"><img width="150" height="auto" src="./images/blue_jay.png" alt="A drawing of a blue jay that Mason made." /></div>
 
-<center> <h2>Data</h2> </center>
+<div align="center"> <h2>Data</h2> </div>
 
 **There are three data files within the data sub-folder which are used in this analysis. They include:**
 
