@@ -1,3 +1,9 @@
+---
+output:
+  word_document: default
+  pdf_document: default
+  html_document: default
+---
 
 
 ### A repository for:
@@ -9,6 +15,7 @@ Bates, J. M., Fidino, M., Nowak-Boyd, L., Strausberger, B. M., Schmidt, K. A., a
 <div align="center"> <h3>Scripts</h3> </div>
 
 ---
+
 **This repository has 3 R Scripts used for the analysis. They will be in your working directory. These include:**
 
 **bates_2017_calc_climate_residuals.R:** This script reads in the atmospheric CO2 data, fits a linear model to it (with year as the independent variable), and calculates the residuals from the model.
