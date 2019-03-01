@@ -38,9 +38,7 @@ For 1958 to 2015, direct observations of atmospheric CO2 levels were collected f
 | Column header | Data type | Description |
 |---|---|---|
 | `cmn` | Character | The common name of a given bird species. Species names are lowercase. |
-| `migstat` | Character | The migratory status of a species. `long` indicates long-distance migrants (species that spend the non-breeding season primarily in the subtropics/tropics south of the United States border).
- `short` indicates short-distance migrants (species that spend the non-breeding season in southern temperate regions of the southern U.S.), and
- `resident` indicates permanant residents (species that maintain most of their populations in the study region throughout the year). |
+| `migstat` | Character | The migratory status of a species. `long` indicates long-distance migrants (species that spend the non-breeding season primarily in the subtropics/tropics south of the United States border). `short` indicates short-distance migrants (species that spend the non-breeding season in southern temperate regions of the southern U.S.), and `resident` indicates permanant residents (species that maintain most of their populations in the study region throughout the year). |
  |`species`| Character | The AOU 4-letter alpha code of a species. |
  
 
