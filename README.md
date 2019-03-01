@@ -14,6 +14,7 @@ These residuals are then used in our primary analysis.
 **bates_2017_analysis_script.R:** This script fits our robust to outlier model to bird nesting records.
 
 **bates_2017_plotting.R:** This script can be used to generate the figures in the manuscript.
+
 ---
 
 <div align="center"><img width="150" height="auto" src="./images/shrike.png" alt="A drawing of a shrike that Mason made." /></div>
@@ -25,6 +26,7 @@ These residuals are then used in our primary analysis.
 **bates_2017_climate_resid_model.R:** This is the model that is called by `bates_2017_calc_climate_residuals.R`. 
 
 **bates_2017_robust_t_model.R:** This is the model that is called by `bates_2017_analysis_script.R`. 
+
 ---
 
 <div align="center"><img width="150" height="auto" src="./images/blue_jay.png" alt="A drawing of a blue jay that Mason made." /></div>
