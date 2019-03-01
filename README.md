@@ -4,17 +4,12 @@
 
 Bates, J. M., Fidino, M., Nowak-Boyd, L., Strausberger, B. M., Schmidt, K. A., and Whelan, C. J. (in prep). Climate change affects nesting phenology of midwestern birds: comparison of modern field records with historical records obtained from museum collections.
 
-This repository contains
-- three `R` scripts
-- two `JAGS` models
-- three `csv` files
-- a few images to spice up the read me file
-
 <div align="center"><img width="150" height="auto" src="./images/american_robin.png" alt="A drawing of a robin that Mason made." /></div>
 
 <div align="center"> <h3>Scripts</h3> </div>
 
 ---
+**This repository has 3 `R` Scripts used for the analysis. They will be in your working directory. These include:**
 
 **bates_2017_calc_climate_residuals.R:** This script reads in the atmospheric CO2 data, fits a linear model to it (with year as the independent variable), and calculates the residuals from the model.
 These residuals are then used in our primary analysis.
@@ -22,6 +17,8 @@ These residuals are then used in our primary analysis.
 **bates_2017_analysis_script.R:** This script fits our robust to outlier model to bird nesting records.
 
 **bates_2017_plotting.R:** This script can be used to generate the figures in the manuscript.
+
+To conduct the analysis the scripts should be ran in the order above.
 
 ---
 
@@ -31,7 +28,7 @@ These residuals are then used in our primary analysis.
 
 ---
 
-**This repository also has 2 JAGS models that we used for our analysis. They should be placed within the jags_models sub-folder of the working directory. These include:**
+**This repository has 2 JAGS models that we used for our analysis. They should be placed within the jags_models sub-folder of the working directory. These include:**
 
 **bates_2017_climate_resid_model.R:** This is the model that is called by `bates_2017_calc_climate_residuals.R`. 
 
