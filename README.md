@@ -6,7 +6,7 @@ Bates, J. M., Fidino, M., Nowak-Boyd, L., Strausberger, B. M., Schmidt, K. A., a
 
 <div align="center"><img width="150" height="auto" src="./images/american_robin.png" alt="A drawing of a robin that Mason made." /></div>
 
-<center> <h2>Scripts</h2> </center>
+<div align="center"> <h2>Scripts</h2> </div>
 
 **bates_2017_calc_climate_residuals.R:** This script reads in the atmospheric CO2 data, fits a linear model to it (with year as the independent variable), and calculates the residuals from the model.
 These residuals are then used in our primary analysis.
