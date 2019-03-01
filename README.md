@@ -60,4 +60,4 @@ For 1958 to 2015, direct observations of atmospheric CO2 levels were collected f
 
 
 
-<div align="center"><img width="100" height="auto" src="american_robin.png" alt="A drawing of a robin that Mason made." /></div>
+<div align="center"><img width="300" height="auto" src="american_robin.png" alt="A drawing of a robin that Mason made." /></div>
