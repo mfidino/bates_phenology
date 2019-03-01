@@ -54,6 +54,12 @@ To conduct the analysis the scripts should be ran in the order above.
 Between 1744 and 1953, global CO2 levels were compiled from ice cores collected at Siple Station, West Antarctica (Neftel et al. 1994). 
 For 1958 to 2015, direct observations of atmospheric CO2 levels were collected from the Mauna Loa Observatory (Keeling et al. 2008).
 
+Keeling, RF, Piper, SC, Bollenbacher, AF, Walker, JS. 2008 Atmospheric CO2 Records from Sites in the Scripps Institution of Oceanography [SIO] Air Sampling Network [1985-2007]. Oak Ridge, TN (USA): Carbon Dioxide Information Analysis Center (CDIAC), Oak Ridge National Laboratory (ORNL).
+
+Neftel, A, Friedli, H, Moor, E, Lötscher, H, Oeschger, H, Siegenthaler, U, Stauffer, B. 1994
+Historical CO2 record from the Siple Station ice core. In Trends: A Compendium of Data on Global Change. Carbon Dioxide Information Analysis Center, Oak Ridge National Laboratory, Oak Ridge, Tenn., U.S.A., U.S. Department of Energy.
+
+
 <br>
 <br>
 
