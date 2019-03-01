@@ -8,6 +8,8 @@ Bates, J. M., Fidino, M., Nowak-Boyd, L., Strausberger, B. M., Schmidt, K. A., a
 
 <div align="center"> <h2>Scripts</h2> </div>
 
+---
+
 **bates_2017_calc_climate_residuals.R:** This script reads in the atmospheric CO2 data, fits a linear model to it (with year as the independent variable), and calculates the residuals from the model.
 These residuals are then used in our primary analysis.
 
