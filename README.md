@@ -5,7 +5,7 @@
 Bates, J. M., Fidino, M., Nowak-Boyd, L., Strausberger, B. M., Schmidt, K. A., and Whelan, C. J. (in prep). Climate change affects nesting phenology of midwestern birds: comparison of modern field records with historical records obtained from museum collections.
 
 **This repository consists of 3 scripts used for analysis, model summary, and plotting. They are located within the working directory. These scripts include:**
-
+<div align="right"><img width="200" height="auto" src="american_robin.png" alt="A drawing of a robin that Mason made." /></div>
 ## Scripts ##
 
 **bates_2017_calc_climate_residuals.R:** This script reads in the atmospheric CO2 data, fits a linear model to it (with year as the independent variable), and calculates the residuals from the model.
