@@ -53,6 +53,8 @@ These residuals are then used in our primary analysis.
 Between 1744 and 1953, global CO2 levels were compiled from ice cores collected at Siple Station, West Antarctica (Neftel et al. 1994). 
 For 1958 to 2015, direct observations of atmospheric CO2 levels were collected from the Mauna Loa Observatory (Keeling et al. 2008).
 
+\n
+\n
 
 **bates_2017_migratory_status.csv:** These data relate a species to a specific migratory group as well as its American Ornithological Union (AOU) 4-letter alpha code.
 
@@ -63,6 +65,9 @@ For 1958 to 2015, direct observations of atmospheric CO2 levels were collected f
  |`species`| Character | The AOU 4-letter alpha code of a species. |
  
  Migatory status for all species was compiled from https://www.allaboutbirds.org/
+ 
+ \n
+ \n
  
  **bates_2017_bird_lay_dates.csv:** This is the lay date information for midwestern birds that were used in this analysis.
  
