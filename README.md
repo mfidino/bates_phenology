@@ -46,18 +46,18 @@ For 1958 to 2015, direct observations of atmospheric CO2 levels were collected f
 | `migstat` | Character | The migratory status of a species. `long` indicates long-distance migrants (species that spend the non-breeding season primarily in the subtropics/tropics south of the United States border). `short` indicates short-distance migrants (species that spend the non-breeding season in southern temperate regions of the southern U.S.), and `resident` indicates permanant residents (species that maintain most of their populations in the study region throughout the year). |
  |`species`| Character | The AOU 4-letter alpha code of a species. |
  
-
-
-
-| Column header | Date type  | Description  |
+ Migatory status for all species was compiled from https://www.allaboutbirds.org/
+ 
+ **bates_2017_bird_lay_dates.csv:** This is the lay date information for midwestern birds that were used in this analysis.
+ 
+ | Column header | Data type | Description |
 |---|---|---|
-| StationID | Categorical | Which site the collected covariate data is associated to. The whole data frame is sorted alphabetically based off of this column.  |
-| House  |  Numeric | Housing density (number of units within a 1000 meter buffer of a site)  |
-| Tree  | Numeric   | Proportion of tree cover (the percent of tree cover within a 1000 m buffer of a site). Can only range from 0 to 1.  |
-| Imp | Numeric | Proportion impervious cover (the percent of impervious cover within a 1000 m buffer of a site). Can only range from 0 to 1. |
+|`species`| Character | The AOU 4-letter alpha code of a species. |
+|`jdate`| Integer | The julian date of the first lay date of a nest (Number of days from January 1 on a given year) |
+|`year` | Integer | The year the nest was found. |
+| `period` | Categorical | `low` indicates historic records housed at the Field museum of egg collections. `high` indicates current records of nest phenology colleted through comprehensive field work by Chris Whelan and Bill Strausburger.|
+ 
 
-Housing density was collected from the Silvis lab website and is from the 2010 census.
 
-Tree cover and Impervious cover were calculated from the 2011 NLCD data.
 
-<div align="center"><img width="100" height="auto" src="https://github.com/mfidino/CV/blob/master/Raccoon.png" alt="A line drawing of a raccoon standing up and waving that Mason made." /></div>
+<div align="center"><img width="100" height="auto" src="american_robin.png" alt="A drawing of a robin that Mason made." /></div>
