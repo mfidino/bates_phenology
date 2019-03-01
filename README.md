@@ -1,12 +1,12 @@
 
 
-# This is the data and code for:
+## This is the data and code for:
 
 Bates, J. M., Fidino, M., Nowak-Boyd, L., Strausberger, B. M., Schmidt, K. A., and Whelan, C. J. (in prep). Climate change affects nesting phenology of midwestern birds: comparison of modern field records with historical records obtained from museum collections.
 
 <div align="center"><img width="150" height="auto" src="./images/american_robin.png" alt="A drawing of a robin that Mason made." /></div>
 
-<div align="center"> <h2 border-bottom:"1px">Scripts</h2> </div>
+<div align="center"> <h3>Scripts</h3> </div>
 
 ---
 
@@ -21,7 +21,9 @@ These residuals are then used in our primary analysis.
 
 <div align="center"><img width="150" height="auto" src="./images/shrike.png" alt="A drawing of a shrike that Mason made." /></div>
 
-<div align="center"> <h2>Models</h2> </div>
+<div align="center"> <h3>Models</h3> </div>
+
+---
 
 **This repository also has 2 JAGS models that we used for our analysis. They should be placed within the jags_models sub-folder of the working directory. These include:**
 
@@ -33,7 +35,9 @@ These residuals are then used in our primary analysis.
 
 <div align="center"><img width="150" height="auto" src="./images/blue_jay.png" alt="A drawing of a blue jay that Mason made." /></div>
 
-<div align="center"> <h2>Data</h2> </div>
+<div align="center"> <h3>Data</h3> </div>
+
+---
 
 **There are three data files within the data sub-folder which are used in this analysis. They include:**
 
