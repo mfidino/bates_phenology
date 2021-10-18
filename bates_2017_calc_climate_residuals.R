@@ -26,7 +26,7 @@ packs <- c("dplyr", "reshape2", "MCMCpack", "mcmcplots",
 package_load(packs)
 
 # read in the co2 data
-co <- read.csv("bates_2017_co2.csv", header = TRUE)
+co <- read.csv("./data/bates_2017_co2.csv", header = TRUE)
 
 # remove any data before 1868
 co <- co[co$yr>1868,]
@@ -60,10 +60,6 @@ mtext(text = seq(1870, 2020, 25), 1,
       line = 0.75, at = seq(1870, 2020, 25), 
       las = 1, cex = 1)
 
-lines(y2 ~ c(1872:2015), lwd = 2, lty = 2)
-legend("topleft", c("co2 level", "linear trend"),
-       lty = c(1,2), lwd = c(2,2), inset = 0.05, col = c("red", "black") )
-
 # prepare data for analysis in jags
 dl <- list(N = length(just_for_birds), Y = just_for_birds, x = 0:143)
 
@@ -76,7 +72,7 @@ adapt_steps = 5000
 burn_in = 20000
 sample_steps = 10000
 thin_steps = 2
-mod_mcmc <- as.mcmc.list(run.jags( model= "bates_2017_climate_resid_model.R" , 
+mod_mcmc <- as.mcmc.list(run.jags( model= "./jags_models/bates_2017_climate_resid_model.R" , 
                                            monitor=params , 
                                            data=dl ,  
                                            n.chains=n_chains ,
@@ -97,12 +93,12 @@ y2 <- mmat[grep("Yp\\[", names(mmat))]
 # calculate residual
 ress <- just_for_birds - y2
 # save the residuals for analysis
-write.csv(ress, "climate_residuals.csv", row.names = FALSE)
+write.csv(ress, "./data/climate_residuals.csv", row.names = FALSE)
 
 # make a plot of the residuals
 pdf("bates_2017_climate_resid_plot.pdf", height = 5, width = 5)
 
-plot(ress[,1]~ c(1872:2015), type = "l", xlim = c(1872,2020),
+plot(ress~ c(1872:2015), type = "l", xlim = c(1872,2020),
      ylim = c(-30, 40),
      lwd = 3, bty = "n", xlab = "Year", ylab = "Difference from linear trend",
      cex.lab = 1.5, xaxt = "n", yaxt = "n", main = "Non-linear component\n of rising co2 levels",
