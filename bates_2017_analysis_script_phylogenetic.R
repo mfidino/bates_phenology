@@ -121,12 +121,6 @@ ivcv <- solve(
   )
 )
 
-mm <-   ape::vcv(
-  tree_unmatched
-)
-windows(12,12)
-heatmap( mm)
-heatmap(mm, Colv = NA, Rowv = NA, scale="column")
 data_list <- list(
   y = y, X = X, U = U, W = W,
   ncof = ncof, species = species,
@@ -197,7 +191,81 @@ mod_mcmc_more_sp <- as.mcmc.list(run.jags( model= "./jags_models/bates_2017_robu
                                            plots=FALSE,
                                            method = "parallel"))
 
-saveRDS(mod_mcmc_more_sp, "C:/Users/mfidino/Documents/bates_2017_model_output_2.RDS")
+saveRDS(mod_mcmc_more_sp, "./mcmc_output/bates_2017_model_output_phylo.RDS")
 mm <- as.matrix(mod_mcmc_more_sp, chains = TRUE)
 # saving the output of the model
 write.csv(mm, "C:/Users/mfidino/Documents/bates_2017_model_output_2.csv")
+
+ph <- mm[,grep("Phylo", colnames(mm))]
+
+
+# Trying it via brms
+
+install.packages("brms")
+library(brms)
+
+
+?brm
+
+
+
+#make the data.frame
+my_df <- data.frame(
+  y = data_list$y,
+  co = data_list$X[,2],
+  yr = data_list$X[,3],
+  migstat = migt$migstat[data_list$species],
+  species = factor(fdt$species),
+  phylo = factor(fdt$species),
+  mx = data_list$mx
+)
+phylo <- tree_unmatched
+A <- ape::vcv.phylo(phylo)
+
+# the formula
+# y ~ yr + co + yr:migstat + co:migstat + (1 + yr + co | gr(phylo, cov = A)) + 
+# (1 + yr + co | species)
+#
+# sigma ~ mx
+#
+# nu ~ offset(1)
+
+longshot <- brm(
+  bf(
+    y ~ yr*migstat + co*migstat + 
+    (1 + yr + co|gr(phylo, cov=A)) + (1 + yr + co |species),
+    sigma ~ mx,
+    nu ~ offset(1)
+  ),
+  data = my_df,
+  family = student(),
+  data2 = list(A = A),
+  prior = c(
+    prior(normal(0, 1000), "b"),
+    prior(normal(0, 1000), "Intercept"),
+    prior(exponential(1/29), "Intercept", dpar = "nu"),
+    prior(uniform(-10,10), "Intercept", dpar = "sigma"),
+    prior(uniform(-10,10), "b", dpar = "sigma")
+  ),
+  iter = 5000
+)
+
+
+Sys.getenv("PATH")
+Sys.getenv("BINPREF")
+readLines("~/.R/Makevars.win")
+readLines("~/.Rprofile")
+readLines("~/.Renviron")
+devtools::session_info("rstan")
+
+  hm <- get_prior(
+    bf(
+      y ~ yr*migstat + co*migstat + 
+        (1 + yr + co|gr(phylo, cov=A)) + (1 + yr + co |species),
+      sigma ~ mx,
+      nu ~ offset(1)
+    ),
+    data = my_df,
+    family = student(),
+    data2 = list(A = A)
+  )
