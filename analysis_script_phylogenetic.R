@@ -18,12 +18,10 @@ package_load<-function(packages = NULL, quiet=TRUE, verbose=FALSE, warn.conflict
 
 # required packages
 packs <- c("dplyr", "runjags", "MCMCpack", "mcmcplots",
-           "runjags", 'parallel', "phytools", "ape")
+           "runjags", 'parallel', "phytools", "ape", "brms")
 
 # load the packages
 package_load(packs)
-
-
 
 
 # read in the data
@@ -112,7 +110,7 @@ my_tree <- ape::read.nexus(
 
 # generate an ultrametric tree
 tree_ultra=ape::chronos(my_tree, lambda=0) 
-tree_unmatched <- multi2di(tree_ultra, random=TRUE)
+tree_unmatched <- ape::multi2di(tree_ultra, random=TRUE)
 
 # Get the variance covariance matrix, and invert it
 ivcv <- solve(
@@ -128,7 +126,8 @@ data_list <- list(
   ivcv = ivcv,
   species_pred = rep(1:nspec, each = nyr),
                   x_pred = x_pred, n_pred = nrow(x_pred),
-                  mx = X[,2] - mean(X[,2])
+                  mx = X[,2] - mean(X[,2]),
+  zeroes = rep(0, nspec)
 )
 
 # make intial values function
@@ -144,6 +143,12 @@ inits <- function(chain){
     Tau.B.raw=rwish(ncof+1, diag(ncof)),
     xi = runif(ncof),
     TauPhylo = runif(ncof, 0.01, 1),
+    B_ph = array(
+      rnorm(
+        nspec*ncof
+      ),
+      dim = c(nspec, ncof)
+    ),
        .RNG.name = switch(chain,
                           "1" = "base::Wichmann-Hill",
                           "2" = "base::Marsaglia-Multicarry",
@@ -168,8 +173,8 @@ inits <- function(chain){
   )
   }
 # parameters to track
-params <- c("B", "G", "sigma.y", "sigma.B", "rho.B", "y_pred", "nu",
-            "t0_log", "t1_log", "TauPhylo", "B_pre")
+params <- c("B_nph","B_ph", "G", "sigma.y", "sigma.B", "rho.B", "y_pred", "nu",
+            "t0_log", "t1_log", "TauPhylo")
 
 # set up arguments for JAGS
 n_chains = detectCores()-2
@@ -178,7 +183,7 @@ burn_in = 100000
 sample_steps = 10000
 thin_steps = 20
 
-mod_mcmc_more_sp <- as.mcmc.list(run.jags( model= "./jags_models/bates_2017_robust_t_phylo_model.R" , 
+mod_mcmc_more_sp <- run.jags( model= "./jags_models/bates_robust_t_phylo_model_noncenter.R" , 
                                            monitor=params , 
                                            data=data_list ,  
                                            inits=inits , 
@@ -189,7 +194,7 @@ mod_mcmc_more_sp <- as.mcmc.list(run.jags( model= "./jags_models/bates_2017_robu
                                            thin=thin_steps ,
                                            summarise=FALSE ,
                                            plots=FALSE,
-                                           method = "parallel"))
+                                           method = "parallel")
 
 saveRDS(mod_mcmc_more_sp, "./mcmc_output/bates_2017_model_output_phylo.RDS")
 mm <- as.matrix(mod_mcmc_more_sp, chains = TRUE)
@@ -198,7 +203,15 @@ write.csv(mm, "C:/Users/mfidino/Documents/bates_2017_model_output_2.csv")
 
 ph <- mm[,grep("Phylo", colnames(mm))]
 
+hm <- summary(
+  mod_mcmc_more_sp,
+  vars = c("B_nph")
+)
 
+yo <- do.call("rbind", mod_mcmc_more_sp$mcmc)
+
+tt <- yo[,grep("TauPhylo", colnames(yo))]
+plot(tt[,3])
 # Trying it via brms
 
 install.packages("brms")
@@ -233,7 +246,7 @@ A <- ape::vcv.phylo(phylo)
 longshot <- brm(
   bf(
     y ~ yr*migstat + co*migstat + 
-    (1 + yr + co|gr(phylo, cov=A)) + (1 + yr + co |species),
+    (1 + yr + co|gr(phylo, cov=A)),
     sigma ~ mx,
     nu ~ offset(1)
   ),
@@ -243,7 +256,7 @@ longshot <- brm(
   prior = c(
     prior(normal(0, 1000), "b"),
     prior(normal(0, 1000), "Intercept"),
-    prior(exponential(1/29), "Intercept", dpar = "nu"),
+    prior(exponential(0.03448276), "Intercept", dpar = "nu"),
     prior(uniform(-10,10), "Intercept", dpar = "sigma"),
     prior(uniform(-10,10), "b", dpar = "sigma")
   ),
