@@ -35,8 +35,8 @@ for(k in 1:ncof){
 }
 
 for(k in 1:ncof){
-  B_ph[1:nspec,k] ~ dmnorm(
-    zeroes,
+  B[1:nspec,k] ~ dmnorm(
+    B_nph[1:species,k],
     TAU[1:nspec,1:nspec,k]
   )
 }

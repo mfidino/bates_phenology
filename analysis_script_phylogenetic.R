@@ -27,9 +27,9 @@ package_load(packs)
 # read in the data
 # migt = species migratory status info
 # fdt = species nesting data
-migt <- read.csv("./data/bates_2017_migratory_status.csv", header = TRUE)
+migt <- read.csv("./data/migratory_status.csv", header = TRUE)
 migt$species <- factor(migt$species)
-fdt <- read.csv("./data/bates_2017_bird_lay_dates.csv", header = TRUE)
+fdt <- read.csv("./data/bird_lay_dates.csv", header = TRUE)
 fdt$species <- factor(fdt$species)
 
 # length of data
@@ -183,7 +183,8 @@ burn_in = 100000
 sample_steps = 10000
 thin_steps = 20
 
-mod_mcmc_more_sp <- run.jags( model= "./jags_models/bates_robust_t_phylo_model_noncenter.R" , 
+# NOTE: THIS MODEL DOES NOT CONVERGE, TAKES ABOUT 18 HOURS.
+mnoncenter <- run.jags( model= "./jags_models/robust_t_phylo_model_noncenter.R" , 
                                            monitor=params , 
                                            data=data_list ,  
                                            inits=inits , 
@@ -196,31 +197,23 @@ mod_mcmc_more_sp <- run.jags( model= "./jags_models/bates_robust_t_phylo_model_n
                                            plots=FALSE,
                                            method = "parallel")
 
-saveRDS(mod_mcmc_more_sp, "./mcmc_output/bates_2017_model_output_phylo.RDS")
-mm <- as.matrix(mod_mcmc_more_sp, chains = TRUE)
-# saving the output of the model
-write.csv(mm, "C:/Users/mfidino/Documents/bates_2017_model_output_2.csv")
+# Try it with a centered model
+# NOTE: This model does not converge, takes about 8 hours.
+mnoncenter <- run.jags( model= "./jags_models/robust_t_phylo_model_center.R" , 
+                        monitor=params , 
+                        data=data_list ,  
+                        inits=inits , 
+                        n.chains=n_chains ,
+                        adapt=adapt_steps ,
+                        burnin=burn_in , 
+                        sample=ceiling(sample_steps / n_chains) ,
+                        thin=thin_steps ,
+                        summarise=FALSE ,
+                        plots=FALSE,
+                        method = "parallel")
 
-ph <- mm[,grep("Phylo", colnames(mm))]
 
-hm <- summary(
-  mod_mcmc_more_sp,
-  vars = c("B_nph")
-)
-
-yo <- do.call("rbind", mod_mcmc_more_sp$mcmc)
-
-tt <- yo[,grep("TauPhylo", colnames(yo))]
-plot(tt[,3])
 # Trying it via brms
-
-install.packages("brms")
-library(brms)
-
-
-?brm
-
-
 
 #make the data.frame
 my_df <- data.frame(
@@ -235,18 +228,13 @@ my_df <- data.frame(
 phylo <- tree_unmatched
 A <- ape::vcv.phylo(phylo)
 
-# the formula
-# y ~ yr + co + yr:migstat + co:migstat + (1 + yr + co | gr(phylo, cov = A)) + 
-# (1 + yr + co | species)
-#
-# sigma ~ mx
-#
-# nu ~ offset(1)
 
-longshot <- brm(
+# NOTE: DOES NOT CONVERGE
+brm_attempt <- brm(
   bf(
     y ~ yr*migstat + co*migstat + 
-    (1 + yr + co|gr(phylo, cov=A)),
+    (1 + yr + co|gr(phylo, cov=A)) +
+    (1 + yr + co|species),
     sigma ~ mx,
     nu ~ offset(1)
   ),
@@ -260,25 +248,5 @@ longshot <- brm(
     prior(uniform(-10,10), "Intercept", dpar = "sigma"),
     prior(uniform(-10,10), "b", dpar = "sigma")
   ),
-  iter = 5000
+  iter = 50000
 )
-
-
-Sys.getenv("PATH")
-Sys.getenv("BINPREF")
-readLines("~/.R/Makevars.win")
-readLines("~/.Rprofile")
-readLines("~/.Renviron")
-devtools::session_info("rstan")
-
-  hm <- get_prior(
-    bf(
-      y ~ yr*migstat + co*migstat + 
-        (1 + yr + co|gr(phylo, cov=A)) + (1 + yr + co |species),
-      sigma ~ mx,
-      nu ~ offset(1)
-    ),
-    data = my_df,
-    family = student(),
-    data2 = list(A = A)
-  )
