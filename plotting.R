@@ -6,7 +6,7 @@
 
 
 
-mm <- data.table::fread("C:/Users/mfidino/Documents/bates_2017_model_output_2.csv", 
+mm <- data.table::fread("./mcmc_output/model_output.csv", 
                         header = TRUE, data.table = FALSE)
 # remove sigma.y
 mm <- mm[,-grep("sigma.y", colnames(mm))]

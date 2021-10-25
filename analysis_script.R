@@ -17,7 +17,7 @@ package_load<-function(packages = NULL, quiet=TRUE, verbose=FALSE, warn.conflict
 }
 
 # required packages
-packs <- c("dplyr", "reshape2", "runjags", "MCMCpack", "mcmcplots",
+packs <- c("dplyr", "runjags", "MCMCpack", "mcmcplots",
            "runjags", 'parallel')
 
 # load the packages
@@ -29,9 +29,9 @@ package_load(packs)
 # read in the data
 # migt = species migratory status info
 # fdt = species nesting data
-migt <- read.csv("bates_2017_migratory_status.csv", header = TRUE)
+migt <- read.csv("./data/migratory_status.csv", header = TRUE)
 migt$species <- factor(migt$species)
-fdt <- read.csv("bates_2017_bird_lay_dates.csv", header = TRUE)
+fdt <- read.csv("./data/bird_lay_dates.csv", header = TRUE)
 fdt$species <- factor(fdt$species)
 
 # length of data
@@ -54,7 +54,7 @@ ncof <- 3
 X <- matrix(c(rep(1, n), fdt$year - (min(fdt$year) )), ncol = 2, nrow = n)
 
 # read in residual data
-ress <- read.csv("climate_residuals.csv", header = TRUE)
+ress <- read.csv("./data/climate_residuals.csv", header = TRUE)
 
 # add 1 to index ress because X[,2] ranges from 0 to 143
 ress_rep <- ress[X[,2]+1,]
@@ -151,7 +151,7 @@ burn_in = 100000
 sample_steps = 10000
 thin_steps = 20
 
-mod_mcmc_more_sp <- as.mcmc.list(run.jags( model= "bates_2017_robust_t_model.R" , 
+mod_mcmc_more_sp <- run.jags(model= "./jags_models/robust_t_model.R" , 
                                            monitor=params , 
                                            data=data_list ,  
                                            inits=inits , 
@@ -162,9 +162,10 @@ mod_mcmc_more_sp <- as.mcmc.list(run.jags( model= "bates_2017_robust_t_model.R" 
                                            thin=thin_steps ,
                                            summarise=FALSE ,
                                            plots=FALSE,
-                                           method = "parallel"))
+                                           method = "parallel")
 
-saveRDS(mod_mcmc_more_sp, "C:/Users/mfidino/Documents/bates_2017_model_output_2.RDS")
-mm <- as.matrix(mod_mcmc_more_sp, chains = TRUE)
+saveRDS(mod_mcmc_more_sp, "./mcmc_output/mcmc_rj.RDS")
+mm <- as.matrix(as.mcmc.list(mod_mcmc_more_sp), chains = TRUE)
 # saving the output of the model
-write.csv(mm, "C:/Users/mfidino/Documents/bates_2017_model_output_2.csv")
+write.csv(mm, "./mcmc_output/model_output.csv",
+          row.names = FALSE)
