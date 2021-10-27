@@ -1,10 +1,9 @@
 ######################
 #
-# bates
+# Note: You need to run most of 'analysis_script.R'
+#  such that you have the data_list in your global
+#  environment.
 #
-#
-
-
 
 mm <- data.table::fread("./mcmc_output/model_output.csv", 
                         header = TRUE, data.table = FALSE)
@@ -49,6 +48,9 @@ betas <- meds[,grep("^B", colnames(meds))]
 # make it into a matrix
 b1 <- matrix(betas[2,], ncol = 3, nrow = nrow(betas)/3)
 betas <- round(betas, 2)
+
+# Get G parameters
+G <- meds[,grep("^G", colnames(meds))]
 
 # for use in a supplementary table
 beta_print <- paste0(betas[2,], " (", betas[1,], " - ", betas[3,], ")")
@@ -175,7 +177,7 @@ make_proj <- function(nv = NULL, mm = NULL, type = NULL, ress = NULL,
   res2 <- as.numeric(ress$x)
   yr <- 0:143
   pm <- pm_low <- pm_high <-  array(0, dim = c(nrow(mm), length(nv), length(yr)))
-  pm_list <-pmlow_list <- pmhigh_list<-pm_prob <-  vector("list", length = length(nv))
+  pm_list <-pmlow_list <- pmhigh_list<-pm_prob <-pm_diff <-  vector("list", length = length(nv))
   nu <- median(mm[,grep("nu", colnames(mm))])
   for(i in 1:length(nv)){
     tk <- paste0("^B\\[", nv[i],",1\\]|^B\\[", nv[i],",2\\]|^B\\[", nv[i],",3\\]")
@@ -208,9 +210,10 @@ make_proj <- function(nv = NULL, mm = NULL, type = NULL, ress = NULL,
     pm_list[[i]] <- apply(pm[,i,], 2, quantile, probs = c(0.025, 0.5, 0.975))
     pmlow_list[[i]] <- apply(pm_low[,i,], 2, median)
     pmhigh_list[[i]] <- apply(pm_high[,i,], 2, median)
-    pm_prob[[i]] <- median(pm[,i,144]/pm[,i,1])
+    pm_prob[[i]] <- median(pm[,i,144]<pm[,i,1])
+    pm_diff[[i]] <- quantile(pm[,i,144] - pm[,i,1],probs = c(0.025, 0.5, 0.975))
   }
-  return(list(pm_list, pmlow_list, pmhigh_list, pm_prob))
+  return(list(pm_list, pmlow_list, pmhigh_list, pm_prob, pm_diff))
 }
 
 # to do. Make the inits figure with 4, 7, 72, 15 to illustrate 
@@ -257,242 +260,12 @@ for(i in 1:length(nochange)) {
   changes[nochange[i],] <- b1
 }
 
-changes <- round(changes, 2)
-
-tch <- which(changes[,1] == 0)
-
-cha <- paste0(changes[,1], " [", changes[,3], " - ", changes[,2], "]")
-
-
-jj2 %>% group_by(group) %>% summarise(me = mean(test), mi = min(test),
-                                      ma = max(test))
-
-sp_frame$day_increase <- 0
-sp_frame$day_increase[-nochange] <- cha[-nochange]
-sp_frame$rule <- 0
-#sp_frame$rule[sp_frame$code %in% first_inclu] <- 1
-#sp_frame$rule <- 2 - sp_frame$rule
-yrspc <- spf[yrnum]
-
-new_aou <- foreign::read.dbf("LIST17.DBF")
-
-new_aou <- new_aou[new_aou$SPEC %in% sp_frame$code,]
-new_levs <- new_aou$SPEC
-colnames(new_aou)[2] <- "code"
-
-
-sp_frame <- dplyr::left_join(sp_frame, new_aou[,c(2,5)], by = "code" )
-sp_frame$code <- factor(sp_frame$code, levels = new_levs)
-sp_frame <- sp_frame[with(sp_frame, order(group, code)),]
-
-write.csv(sp_frame, "field_table1.csv", row.names = FALSE)
-pdf("yr_effect.pdf", width = 6, height = 10)
-windows(6,10)
-par(mfrow = c(2,1))
-for(i in 1:length(yrnum)){
-  dat <- fdt[fdt$species== yrspc[i],]
-  plot(1~1, xlim = c(0,145), ylim = c(50, 250) ,
-       xlab = "Year", ylab = "Initial lay date", bty = "n", 
-       xaxt = "n", yaxt = "n", main = migt$cmn[migt$code== dat$species[1]] )
-  axis(2, at = seq(50, 250, 50), labels=F, tck=-.035)
-  axis(2, at = seq(50, 250, 25), labels=F, tck=-.025)
-  axis(2, at = seq(50, 250, 12.5), labels=F, tck=-.015)
-  mtext(text = seq(50, 250, 50), 2, line = .75, at = seq(50, 250, 50), las = 1, cex = 1)
-  
-  axis(1, at = seq(0, 150, 25), labels=F, tck=-.035)
-  axis(1, at = seq(0, 150, 12.5), labels=F, tck=-.025)
-  axis(1, at = seq(-0, 150, 6.25), labels=F, tck=-.015)
-  mtext(text = c(floor(seq(1872, 2015, length.out = 7))), 1, line = .75, at = seq(0, 150, 25), las = 1, cex = 1)
-  
-  lines(yrest[[1]][[i]][2,] , lwd = 2)
-  lines(yrest[[1]][[i]][1,] , lwd = 2, lty = 2)
-  lines(yrest[[1]][[i]][3,] , lwd = 2, lty = 2)
-  
-  lines(yrest[[2]][[i]] , lwd = 2, lty = 3)
-  lines(yrest[[3]][[i]] , lwd = 2, lty = 3)
-  
-  
-  
-  #lines(c(yrest[[i]][2,] + abs(median(res2))), lwd = 2)
-  #lines(c(yrest[[i]][1,] + abs(median(res2))), lwd = 2, lty = 2)
-  #lines(c(yrest[[i]][3,] + abs(median(res2))), lwd = 2, lty = 2)
-  points(dat$jdate ~ c(dat$year-1872), col = alpha("black", 0.5),
-         pch = 16)
-  
-}
-dev.off()
-# include warbler
-my_plots <- 72
-
-pdf("all_sp.pdf", width = 6, height = 10)
-par(mfrow = c(2,1))
-for(i in 1:72){
-  dat <- fdt[fdt$species== migt$code[i],]
-  plot(1~1, xlim = c(0,145), ylim = c(50, 250) ,
-       xlab = "Year", ylab = "Initial lay date", bty = "n", 
-       xaxt = "n", yaxt = "n", main = migt$cmn[i])
-  axis(2, at = seq(50, 250, 50), labels=F, tck=-.035)
-  axis(2, at = seq(50, 250, 25), labels=F, tck=-.025)
-  axis(2, at = seq(50, 250, 12.5), labels=F, tck=-.015)
-  mtext(text = seq(50, 250, 50), 2, line = .75, at = seq(50, 250, 50), las = 1, cex = 1)
-  
-  axis(1, at = seq(0, 150, 25), labels=F, tck=-.035)
-  axis(1, at = seq(0, 150, 12.5), labels=F, tck=-.025)
-  axis(1, at = seq(-0, 150, 6.25), labels=F, tck=-.015)
-  mtext(text = c(floor(seq(1872, 2015, length.out = 7))), 1, line = .75, at = seq(0, 150, 25), las = 1, cex = 1)
-  
-  lines(noest[[1]][[i]][2,] , lwd = 2)
-  lines(noest[[1]][[i]][1,] , lwd = 2, lty = 2)
-  lines(noest[[1]][[i]][3,] , lwd = 2, lty = 2)
-  
-  lines(noest[[2]][[i]] , lwd = 2, lty = 3)
-  lines(noest[[3]][[i]] , lwd = 2, lty = 3)
-  
-  
-  
-  #lines(c(yrest[[i]][2,] + abs(median(res2))), lwd = 2)
-  #lines(c(yrest[[i]][1,] + abs(median(res2))), lwd = 2, lty = 2)
-  #lines(c(yrest[[i]][3,] + abs(median(res2))), lwd = 2, lty = 2)
-  points(dat$jdate ~ c(dat$year-1872), col = alpha("black", 0.5),
-         pch = 16)
-  
-}
-dev.off()
-
-x <- 
-  wireframe()
-
-pdf("both_est.pdf", width = 6, height = 10)
-par(mfrow = c(2,1))
-for(i in 1:length(bonum)){
-  dat <- fdt[fdt$species== bothspc[i],]
-  plot(1~1, xlim = c(0,145), ylim = c(50, 250) ,
-       xlab = "Year", ylab = "Initial lay date", bty = "n", 
-       xaxt = "n", yaxt = "n", main = dat$species[i])
-  axis(2, at = seq(50, 250, 50), labels=F, tck=-.035)
-  axis(2, at = seq(50, 250, 25), labels=F, tck=-.025)
-  axis(2, at = seq(50, 250, 12.5), labels=F, tck=-.015)
-  mtext(text = seq(50, 250, 50), 2, line = .75, at = seq(50, 250, 50), las = 1, cex = 1)
-  
-  axis(1, at = seq(0, 150, 25), labels=F, tck=-.035)
-  axis(1, at = seq(0, 150, 12.5), labels=F, tck=-.025)
-  axis(1, at = seq(-0, 150, 6.25), labels=F, tck=-.015)
-  mtext(text = c(floor(seq(1872, 2015, length.out = 7))), 1, line = .75, at = seq(0, 150, 25), las = 1, cex = 1)
-  
-  lines(boest[[1]][[i]][2,] , lwd = 2)
-  lines(boest[[1]][[i]][1,] , lwd = 2, lty = 2)
-  lines(boest[[1]][[i]][3,] , lwd = 2, lty = 2)
-  
-  lines(boest[[2]][[i]] , lwd = 2, lty = 3)
-  lines(boest[[3]][[i]] , lwd = 2, lty = 3)
-  
-  
-  
-  #lines(c(yrest[[i]][2,] + abs(median(res2))), lwd = 2)
-  #lines(c(yrest[[i]][1,] + abs(median(res2))), lwd = 2, lty = 2)
-  #lines(c(yrest[[i]][3,] + abs(median(res2))), lwd = 2, lty = 2)
-  points(dat$jdate ~ c(dat$year-1872), col = alpha("black", 0.5),
-         pch = 16)
-  
-}
-dev.off()
-
-
-pdf("co_est.pdf", width = 6, height = 10)
-par(mfrow = c(2,1))
-for(i in 1:length(conum)){
-  dat <- fdt[fdt$species== cospc[i],]
-  plot(1~1, xlim = c(0,145), ylim = c(50, 250) ,
-       xlab = "Year", ylab = "Initial lay date", bty = "n", 
-       xaxt = "n", yaxt = "n", main = dat$species[i])
-  axis(2, at = seq(50, 250, 50), labels=F, tck=-.035)
-  axis(2, at = seq(50, 250, 25), labels=F, tck=-.025)
-  axis(2, at = seq(50, 250, 12.5), labels=F, tck=-.015)
-  mtext(text = seq(50, 250, 50), 2, line = .75, at = seq(50, 250, 50), las = 1, cex = 1)
-  
-  axis(1, at = seq(0, 150, 25), labels=F, tck=-.035)
-  axis(1, at = seq(0, 150, 12.5), labels=F, tck=-.025)
-  axis(1, at = seq(-0, 150, 6.25), labels=F, tck=-.015)
-  mtext(text = c(floor(seq(1872, 2015, length.out = 7))), 1, line = .75, at = seq(0, 150, 25), las = 1, cex = 1)
-  
-  lines(coest[[1]][[i]][2,] , lwd = 2)
-  lines(coest[[1]][[i]][1,] , lwd = 2, lty = 2)
-  lines(coest[[1]][[i]][3,] , lwd = 2, lty = 2)
-  
-  lines(coest[[2]][[i]] , lwd = 2, lty = 3)
-  lines(coest[[3]][[i]] , lwd = 2, lty = 3)
-  
-  
-  
-  #lines(c(yrest[[i]][2,] + abs(median(res2))), lwd = 2)
-  #lines(c(yrest[[i]][1,] + abs(median(res2))), lwd = 2, lty = 2)
-  #lines(c(yrest[[i]][3,] + abs(median(res2))), lwd = 2, lty = 2)
-  points(dat$jdate ~ c(dat$year-1872), col = alpha("black", 0.5),
-         pch = 16)
-  
-}
-dev.off()
-
-
-pdf("no_est.pdf", width = 6, height = 10)
-par(mfrow = c(2,1))
-for(i in 1:length(none)){
-  sp <- levels(fdt$species)[none[i]]
-  dat <- fdt[fdt$species== sp,]
-  plot(1~1, xlim = c(0,145), ylim = c(50, 250) ,
-       xlab = "Year", ylab = "Initial lay date", bty = "n", 
-       xaxt = "n", yaxt = "n", main = dat$species[i])
-  axis(2, at = seq(50, 250, 50), labels=F, tck=-.035)
-  axis(2, at = seq(50, 250, 25), labels=F, tck=-.025)
-  axis(2, at = seq(50, 250, 12.5), labels=F, tck=-.015)
-  mtext(text = seq(50, 250, 50), 2, line = .75, at = seq(50, 250, 50), las = 1, cex = 1)
-  
-  axis(1, at = seq(0, 150, 25), labels=F, tck=-.035)
-  axis(1, at = seq(0, 150, 12.5), labels=F, tck=-.025)
-  axis(1, at = seq(-0, 150, 6.25), labels=F, tck=-.015)
-  mtext(text = c(floor(seq(1872, 2015, length.out = 7))), 1, line = .75, at = seq(0, 150, 25), las = 1, cex = 1)
-  
-  lines(noest[[1]][[i]][2,] , lwd = 2)
-  lines(noest[[1]][[i]][1,] , lwd = 2, lty = 2)
-  lines(noest[[1]][[i]][3,] , lwd = 2, lty = 2)
-  
-  lines(noest[[2]][[i]] , lwd = 2, lty = 3)
-  lines(noest[[3]][[i]] , lwd = 2, lty = 3)
-  
-  
-  
-  #lines(c(yrest[[i]][2,] + abs(median(res2))), lwd = 2)
-  #lines(c(yrest[[i]][1,] + abs(median(res2))), lwd = 2, lty = 2)
-  #lines(c(yrest[[i]][3,] + abs(median(res2))), lwd = 2, lty = 2)
-  points(dat$jdate ~ c(dat$year-1872), col = alpha("black", 0.5),
-         pch = 16)
-  
-}
-dev.off()
-
-
-# x, y, z variables
-x <- mtcars$wt
-y <- mtcars$disp
-z <- mtcars$mpg
-# Compute the linear regression (z = ax + by + d)
-fit <- lm(z ~ x + y)
-# predict values on regular xy grid
-grid.lines = 26
-x.pred <- seq(min(x), max(x), length.out = grid.lines)
-y.pred <- seq(min(y), max(y), length.out = grid.lines)
-xy <- expand.grid( x = x.pred, y = y.pred)
-z.pred <- matrix(predict(fit, newdata = xy), 
-                 nrow = grid.lines, ncol = grid.lines)
-# fitted points for droplines to surface
-fitpoints <- predict(fit)
-# scatter plot with regression plane
 
 
 # final figure for ms
 windows(8,8)
 
-pdf("nesting_figure1_noeabl.pdf", height = 8, width = 8)
+pdf("./figures/figure1.pdf", height = 8, width = 8)
 m1 <- matrix(c(5,5,rep(1,8), rep(2, 8)), ncol = 18, nrow = 8,
              byrow = TRUE)
 #m4 <- rep(8, 18)
@@ -516,17 +289,17 @@ axis(2, at = seq(50, 250, 12.5), labels=F, tck=-.015)
 mtext(text = seq(50, 250, 50), 2, line = 1, 
       at = seq(50, 250, 50), las = 1, cex = 1.5)
 mtext(text = "a)", 3, line = 0.1, at = 0, las = 1, cex = 1.5)
-text(x = -50, y = 35, labels = "Initial lay date (Julian day)", 
+text(x = -50, y = 35, labels = "Initial lay date (Ordinal day)", 
      cex = 4, xpd = NA, srt = 90)
 
-lines(yrest[[1]][[13]][2,] , lwd = 2)
-lines(yrest[[1]][[13]][1,] , lwd = 2, lty = 2)
-lines(yrest[[1]][[13]][3,] , lwd = 2, lty = 2)
+lines(yrest[[1]][[10]][2,] , lwd = 2)
+lines(yrest[[1]][[10]][1,] , lwd = 2, lty = 2)
+lines(yrest[[1]][[10]][3,] , lwd = 2, lty = 2)
 
-lines(yrest[[2]][[13]] , lwd = 2, lty = 3)
-lines(yrest[[3]][[13]] , lwd = 2, lty = 3)
+lines(yrest[[2]][[10]] , lwd = 2, lty = 3)
+lines(yrest[[3]][[10]] , lwd = 2, lty = 3)
 
-points(dat$jdate ~ c(dat$year-1872), col = alpha("black", 0.5),
+points(dat$jdate ~ c(dat$year-1872), col = scales::alpha("black", 0.5),
        pch = 16, cex = 1.5)
 
 axis(1, at = seq(0, 150, 25), labels=F, tck=-.035)
@@ -556,14 +329,14 @@ axis(1, at = seq(-0, 150, 6.25), labels=F, tck=-.015)
 #     labels = c(floor(seq(1872, 2015, length.out = 7))),
 #     adj = 1, las = 1, cex = 1.5, srt = 45, xpd = NA)
 
-lines(coest[[1]][[4]][2,] , lwd = 2)
-lines(coest[[1]][[4]][1,] , lwd = 2, lty = 2)
-lines(coest[[1]][[4]][3,] , lwd = 2, lty = 2)
+lines(coest[[1]][[3]][2,] , lwd = 2)
+lines(coest[[1]][[3]][1,] , lwd = 2, lty = 2)
+lines(coest[[1]][[3]][3,] , lwd = 2, lty = 2)
 
-lines(coest[[2]][[4]] , lwd = 2, lty = 3)
-lines(coest[[3]][[4]] , lwd = 2, lty = 3)
+lines(coest[[2]][[3]] , lwd = 2, lty = 3)
+lines(coest[[3]][[3]] , lwd = 2, lty = 3)
 
-points(dat$jdate ~ c(dat$year-1872), col = alpha("black", 0.5),
+points(dat$jdate ~ c(dat$year-1872), col = scales::alpha("black", 0.5),
        pch = 16, cex = 1.5)
 
 sp <- levels(fdt$species)[15]
@@ -587,14 +360,14 @@ text(x = seq(0, 150, 25), y = rep(30, 7),
      adj = 1, las = 1, cex = 2, srt = 45, xpd = NA)
 
 
-lines(noest[[1]][[11]][2,] , lwd = 2)
-lines(noest[[1]][[11]][1,] , lwd = 2, lty = 2)
-lines(noest[[1]][[11]][3,] , lwd = 2, lty = 2)
+lines(noest[[1]][[12]][2,] , lwd = 2)
+lines(noest[[1]][[12]][1,] , lwd = 2, lty = 2)
+lines(noest[[1]][[12]][3,] , lwd = 2, lty = 2)
 
-lines(noest[[2]][[11]] , lwd = 2, lty = 3)
-lines(noest[[3]][[11]] , lwd = 2, lty = 3)
+lines(noest[[2]][[12]] , lwd = 2, lty = 3)
+lines(noest[[3]][[12]] , lwd = 2, lty = 3)
 
-points(dat$jdate ~ c(dat$year-1872), col = alpha("black", 0.5),
+points(dat$jdate ~ c(dat$year-1872), col = scales::alpha("black", 0.5),
        pch = 16, cex = 1.5)
 
 sp <- levels(fdt$species)[7]
@@ -624,7 +397,7 @@ lines(boest[[1]][[1]][3,] , lwd = 2, lty = 2)
 lines(boest[[2]][[1]] , lwd = 2, lty = 3)
 lines(boest[[3]][[1]] , lwd = 2, lty = 3)
 
-points(dat$jdate ~ c(dat$year-1872), col = alpha("black", 0.5),
+points(dat$jdate ~ c(dat$year-1872), col = scales::alpha("black", 0.5),
        pch = 16, cex = 1.5)
 
 dev.off()
@@ -635,31 +408,26 @@ dev.off()
 #lines(c(yrest[[i]][2,] + abs(median(res2))), lwd = 2)
 #lines(c(yrest[[i]][1,] + abs(median(res2))), lwd = 2, lty = 2)
 #lines(c(yrest[[i]][3,] + abs(median(res2))), lwd = 2, lty = 2)
-points(dat$jdate ~ c(dat$year-1872), col = alpha("black", 0.5),
-       pch = 16, cex = 1.5)
 
-cept <- t(meds[,1:72])
-hm <- t(meds[,73:216])
-yer <- hm[1:72,2]
-co <- hm[-c(1:72),2]
+yer <- betas[2, grep("^B\\[\\d\\d?\\,2", colnames(betas))]
+co <- betas[2, grep("^B\\[\\d\\d?\\,3", colnames(betas))]
+
 windows(4,4)
-pdf("bates_figure2.pdf", height = 4, width = 4)
+pdf("./figures/figure2.pdf", height = 4, width = 4)
 par( mar = c(5,5.5, 1.25,1))
 plot(1~1, xlim = c(-0.4, 0.35), ylim = c(-0.75, 0.75) ,
-     xlab = "Species specific change in mean lay date\nto year (Julian day)",
-     ylab = "Species specific change in mean lay date\nto changes in global CO2 (Julian day)", bty = "n", 
+     xlab = "Species specific change in mean lay date\nto year (Ordinal day)",
+     ylab = "Species specific change in mean lay date\nto changes in global CO2 (Ordinal day)", bty = "n", 
      xaxt = "n", yaxt = "n")
 axis(2, at = seq(-0.75, 0.75, .25), labels=F, tck=-.035)
 axis(2, at = seq(-0.75, 0.75, .125), labels=F, tck=-.025)
 mtext(seq(-0.75, 0.75, 0.25), 2, 0.8, at = seq(-0.75, 0.75, 0.25),
       las = 2)
-
 axis(1, at = seq(-0.4, 0.3, .1), labels=F, tck=-.035)
 axis(1, at = seq(-0.4, 0.3, .05), labels=F, tck=-.025)
 mytext <- seq(-1, 1, 0.1)
 mytext <- mytext[mytext>-0.4 & mytext <0.4]
 mtext(mytext, 1, 0.8, at = seq(-0.4, 0.3, 0.1) )
-#abline(coef(lm(cept~slo)))
 abline(v = 0, lty = 2)
 abline(h = 0, lty =2 )
 lines(x=c(.3,3.5), y = c(0,0), col = "white", lwd = 2)
@@ -681,234 +449,265 @@ legend(x=-0.015, y = 0.75, pch = c(24,22,23,21), bty = "n",
        pt.bg = c("#f3bf2b", "#9d3a35", "black", "#717e9e"),
        pt.cex = 1.3)
 
-
-
 spl <- which(levels(spcode)=="YEWA")
-#points(co[spl]~yer[spl], pch = 19)
+
 text(x = yer[spl]-0.05, y = co[spl]-0.05, labels = "YEWA", cex = 0.75, pos = 1,
      offset = 0)
 
-
-#abline(a=0,b = -1.875, lty = 2)
-#abline(a=0, b=1.875, lty = 2)
-  # amgo
+# fisp
 spl <- which(levels(spcode)=="FISP")
-#points(co[spl]~yer[spl], pch = 19)
+
 text(x = yer[spl]-0.085, y = co[spl]-0.04, labels = "FISP", cex = 0.75, pos = 1,
      offset = 0)
 #amro
 spl <- which(levels(spcode)=="AMRO")
-#points(co[spl]~yer[spl], pch = 19)
 text(x = yer[spl]+0.05, y = co[spl]+0.05, labels = "AMRO", cex = 0.75, pos = 3,
      offset = 0)
-#text(x = -0.4, y = 0.70, labels = as.roman(1), family = "serif")
-#text(x = 0.03, y = 0.70, labels = as.roman(2), family = "serif")
-#text(x = -0.4, y = -0.05, labels = as.roman(3), family = "serif")
-#text(x = , y = 0.70, labels = as.roman(4), family = "serif")
-#yewa
+#blga
 spl <- which(levels(spcode)=="BLJA")
-#points(co[spl]~yer[spl], pch = 19)
 text(x = yer[spl]+0.1, y = co[spl]+0.05, labels = "BLJA", cex = 0.75,
      pos = 3,
      offset = 0)
 dev.off()
-#BLJA
-spl <- which(levels(spcode)=="BLJA")
-points(co[spl]~yer[spl], pch = 19)
-text(x = cept[spl]+0.02, y = slo[spl]+0.05, labels = "BLJA", cex = 1, pos = 4,
-     offset = 0.3)
-spl <- which(levels(spcode)=="BHCO")
-points(co[spl]~yer[spl], pch = 19)
-text(x = cept[spl]+0.02, y = slo[spl]+0.05, labels = "BLJA", cex = 1, pos = 4,
-     offset = 0.3)
 
 
-plot(1~1, xlim = c(-0.75, 0.5), ylim = c(-0.75, 0.5) ,
-     xlab = "Change in lay date per year (Julain day)",
-     ylab = "Initial lay date (Julian day)", bty = "n", 
-     xaxt = "n", yaxt = "n")
-
-axis(2, at = seq(-0.75, 0.5, 0.25), labels=F, tck=-.035)
-axis(2, at = seq(-0.75, 0.5, .125), labels=F, tck=-.025)
-axis(2, at = seq(-0.75, 0.5, 0.0625), labels=F, tck=-.015)
-mtext(text = seq(-0.75, 0.5, 0.25), 2, line = .75, 
-      at = seq(-0.75, 0.5, 0.25), las = 1, cex = 1.5)
-
-axis(1, at = seq(-0.75, 0.5, 0.25), labels=F, tck=-.035)
-axis(1, at = seq(-0.75, 0.5, .125), labels=F, tck=-.025)
-axis(1, at = seq(-0.75, 0.5, 0.0625), labels=F, tck=-.015)
-mtext(text = seq(-0.75, 0.5, 0.25), 1, line = .75, 
-      at = seq(-0.75, 0.5, 0.25), las = 1, cex = 1.5)
-
-long <- which(migt$migstat == "long")
-shor <-which(migt$migstat == "short")
-res <- which(migt$migstat == "resident")
 
 
-points(x = slo[shor,2], y = cept[shor,2], 
-       pch = 21, bg = "#d95f02", cex = 1.5)
-points(x = slo[res,2], y = cept[res,2], 
-       pch = 23, bg = "#7570b3", cex = 1.5)
-points(x = slo[long,2], y = cept[long,2], 
-       pch = 24, bg = "#1b9e77", cex = 1.5)
+samp_size <- data.frame(table(data_list$species))
 
-plot(1~1, xlim = c(-0.75, 0.5), ylim = c(50, 250) ,
-     xlab = "Change in lay date per year (Julain day)",
-     ylab = "Initial lay date (Julian day)", bty = "n", 
-     xaxt = "n", yaxt = "n")
-
-axis(2, at = seq(50, 250, 50), labels=F, tck=-.035)
-axis(2, at = seq(50, 250, 25), labels=F, tck=-.025)
-axis(2, at = seq(50, 250, 12.5), labels=F, tck=-.015)
-mtext(text = seq(50, 250, 50), 2, line = .75, 
-      at = seq(50, 250, 50), las = 1, cex = 1.5)
-
-axis(1, at = seq(-0.75, 0.5, 0.25), labels=F, tck=-.035)
-axis(1, at = seq(-0.75, 0.5, .125), labels=F, tck=-.025)
-axis(1, at = seq(-0.75, 0.5, 0.0625), labels=F, tck=-.015)
-mtext(text = seq(-0.75, 0.5, 0.25), 1, line = .75, 
-      at = seq(-0.75, 0.5, 0.25), las = 1, cex = 1.5)
-
-long <- which(migt$migstat == "long")
-shor <-which(migt$migstat == "short")
-res <- which(migt$migstat == "resident")
+# 
+all_change <- make_proj(nv = 1:72, mm = covs, type = 3, ress = ress, my_med)
 
 
-points(x = slo[shor,2], y = cept[shor,2], 
-       pch = 21, bg = "#d95f02", cex = 1.5)
-points(x = slo[res,2], y = cept[res,2], 
-       pch = 23, bg = "#7570b3", cex = 1.5)
-points(x = slo[long,2], y = cept[long,2], 
-       pch = 24, bg = "#1b9e77", cex = 1.5)
-plot()
+eff_size <- matrix(unlist(all_change[[5]]), ncol = 3, byrow = TRUE)
 
-x <- ress
-y <- 
-  library(plot3D)
+sigs <- apply(eff_size, 1 ,sign)
+sigs <- apply(sigs, 2, function(x) abs(sum(x)))
+sigs <- which(sigs == 3)
 
-x <- dat$year
-y <- ress[c(x-1872+1),]
-z <- dat$jdate
-scatter3D(x, y, z, xlim = range(x), ylim = range(y),
-          zlim = range(z), pch = 20, cex = 2, theta = 45,
-          phi = 0, xlab = "Year", ylab = "c02", zlab = "Julain date",
-          col = NULL), surf = list(x = c(1872:2015), y = ress[,1],
-                                   z = coest[[1]][[1]][2,],
-                                   fitpoints = coest[[1]][[1]][2,]))
+my_cols <- rep("gray80", 72)
+my_cols[sigs] <- "gray40"
+my_pch <- rep(21, 72)
+my_pch[sigs] <- 23
+set.seed(20)
+to_move <- rnorm(72, 0, 0.125)
 
+#axis(2, at= seq(1,9), labels = F, tck = -.025)
 
-scatter3D(x, y, z, pch = 18, cex = 2, 
-          theta = 20, phi = 20, ticktype = "detailed",
-          xlab = "wt", ylab = "disp", zlab = "mpg",  
-          surf = list(x = x.pred, y = y.pred, z = z.pred,  
-                      facets = NA, fit = fitpoints), main = "mtcars")
-
-
-upq <- apply(mm, 2, quantile, probs = c(0.975))
-
-quants <- apply(mm, 2, quantile, probs = c(0.025, 0.5, 0.975))
-
-bs <- grep("^B\\[", colnames(mm))
-# put the B's in a matrix
-b <- data.frame(matrix(meds[bs], nrow = nspec, ncol = 3))
-bq <- data.frame(matrix(upq[bs], nrow = nspec, ncol = 3))
-bwm <- cbind(b, migt[,-3], bq[,2])
-colnames(bwm) <- c("X1", "X2", "X3", "cmn", "migstat", "remove", "code", "upq")
-
-to_c <- bwm[bwm$upq<0,]
-
-bwm$cmn[bwm$upq>0]
-plot(1,1, ylim = c(100,250), xlim = c(-0.3,0.2), type = "n", xlab = 
-       "rate of increase (days per year)", ylab = "initial lay date", bty = "n", xaxt = "n", yaxt = "n")
-
-axis(2, at = seq(100, 250, 25), labels=F, tck=-.035)
-axis(2, at = seq(100, 250, 12.5), labels=F, tck=-.025)
-axis(2, at = seq(100, 250, 12.5/2), labels=F, tck=-.015)
-mtext(text = seq(100, 250, 25), 2, line = .75, at = seq(100, 250, 25), las = 1, cex = 1)
-
-axis(1, at = seq(-0.3, 0.2, 0.1), labels=F, tck=-.035)
-axis(1, at = seq(-0.3, 0.2, 0.05), labels=F, tck=-.025)
-axis(1, at = seq(-0.3, 0.2, 0.025), labels=F, tck=-.015)
-mtext(text = c(-0.3, -0.2, -0.1, 0, 0.1, 0.2), 1, line = .75, at = signif(seq(-0.3, 0.2, 0.1), 2), las = 1, cex = 1)
-
-# plot residents
-with(bwm, points(X1[migstat=="resident"]~X2[migstat=="resident"], pch = 21, bg = "gray50", cex = 1.5))
-with(bwm, points(X1[migstat=="long"]~X2[migstat=="long"], pch = 21, bg = "green", cex = 1.5))
-with(bwm, points(X1[migstat=="short"]~X2[migstat=="short"], pch = 21, bg = "purple", cex = 1.5))
-legend("topright", c("resident", "long", "short"), pch = c(16,16,16), col = c("gray50", "green", "purple") )
-
-
-boxplot(bwm$X1~bwm$migstat)
-boxplot(bwm$X2~bwm$migstat)
-boxplot(bwm$X3~bwm$migstat)
-with(to_c, points(X1~X2, pch = 1, col = "black", cex = 3))
-
-to_c$cmn
-
-# time to make species specific plots.
-
-# we have the meds quantile so lets get y_preds from it and bind it
-# with x pred
-
-yp <- data.frame(cbind(t(quants[,grep("y_pred", colnames(quants))]),x_pred))
-colnames(yp) <- c("low", "med", "high", "spn", "yr")
-yp$sp <- rep(levels(span), each = nyr)
-
-sp_cof <- data.frame(cbind(t(quants[,grep("^B\\[\\w\\w?,1", colnames(quants))]),
-                           t(quants[,grep("^B\\[\\w\\w?,2", colnames(quants))])))
-sp_cof$sp <- levels(span)
-colnames(sp_cof) <- c("il", "im", "ih", "sl", "sm", "sh", "sp")    
-
-# get order to which we want to plot them
-
-spor <- levels(span)
-yv <- c(1815:2015)
-
-pdf("species_plots.pdf")
-par(mfrow = c(2,2))
-for(i in 1:nspec){
-  sp2 <- sp_cof[i,]
-  plot(1,1, ylim = c(50,250), xlim = c(1815, 2015), type = "n", xlab = 
-         "rate of increase (days per year)", ylab = "initial lay date", bty = "n", xaxt = "n", yaxt = "n",
-       main = spor[i])
+# This is a function to add axis ticks on log2 scale
+minor.ticks.axis <- function(ax,n,t.ratio=0.5,mn,mx,...){
   
-  axis(2, at = seq(50, 250, 50), labels=F, tck=-.035)
-  axis(2, at = seq(50, 250, 25), labels=F, tck=-.025)
-  axis(2, at = seq(50, 250, 25/2), labels=F, tck=-.015)
-  mtext(text = seq(50, 250, 50), 2, line = .75, at = seq(50, 250, 50), las = 1, cex = 1)
+  lims <- par("usr")
+  if(ax %in%c(1,3)) lims <- lims[1:2] else lims[3:4]
   
-  axis(1, at = seq(1815, 2015, 10), labels=F, tck=-.035)
-  axis(1, at = seq(1815, 2015, 5), labels=F, tck=-.025)
-  axis(1, at = seq(1815, 2015, 2.5), labels=F, tck=-.015)
-  mtext(text = seq(1815, 2015, 30), 1, line = .75, at = seq(1815, 2015, 30), las = 1, cex = 0.5)
-  fh <- sp2$ih + sp2$sh * 0:200
-  fm <- sp2$im + sp2$sm * 0:200
-  fl <- sp2$il + sp2$sl * 0:200
-  lines(fm ~ yv, lwd = 2)
-  lines(fh~ yv)
-  lines(fl ~ yv)
-  points(fdt[grep(spor[i], fdt$species),2]~
-           fdt[grep(spor[i], fdt$species),3])
+  major.ticks <- pretty(lims,n=5)
+  if(missing(mn)) mn <- min(major.ticks)
+  if(missing(mx)) mx <- max(major.ticks)
+  
+  major.ticks <- major.ticks[major.ticks >= mn & major.ticks <= mx]
+  
+  axis(ax,at=major.ticks,tck = -0.025, labels = FALSE)
+  mtext(text = c("8", sprintf("%.0f", 2^seq(4,10, 2))), 
+        1, line = 0.55, at = c(3, seq(4,10, 2)), cex = 1.2)
+  
+  
+  axis(ax, at = seq(3,10,1), labels = FALSE, tck = -0.0125)
   
 }
+windows(5,5)
+tiff("./figures/figure3.tiff",
+     height = 5, width = 5, units = "in", res = 600, compression= "lzw")
+par(mar = c(4,6,0.5,0.5))
+plot(1~1, xlim = c(3,10), ylim = c(-60, 20) ,
+     xlab = "", ylab = "", bty = "l", 
+     xaxt = "n", yaxt = "n", type = "n")
+
+minor.ticks.axis(1,1,mn=3, mx=10 )
+
+axis(2, seq(-60,20, 10), labels = FALSE, tck = -0.025)
+axis(2, seq(-60,20, 10/2), labels = FALSE, tck = -0.025/2)
+
+mtext(sprintf("%.0f", seq(-60,20, 10)), 2, line = 0.7, las = 1,
+      at = seq(-60,20, 10), cex = 1.2)
+
+for(i in 1:nrow(eff_size)){
+  lines(x = c(log(rep(samp_size[i, 2], 2), 2) + to_move[i]),
+        y = eff_size[i, -2],
+        col = scales::alpha("black", 0.5),
+        lwd = 1.5
+  )
+}
+
+points(eff_size[,2]~ c(log(samp_size[,2], base = 2) + to_move),
+       pch = my_pch,
+       bg = my_cols,
+       cex = 1.2)
+abline(h = 0, lty = 2, lwd = 2)
+
+mtext(expression("Sample size (log"[2]*" scale)"), 1, 
+      line = 2.5, at = 6.5, cex = 1.5  )
+mtext("Difference in initial lay date\n between 1872 and 2015",
+      2, at = -20, line = 2.5, cex = 1.5)
+
+legend("bottomright", legend = c("Yes", "No"), pch = c(21,23), 
+       pt.bg = c("gray80", "gray40"), title = "95% CI includes zero",
+       bty = "n")
+
+dev.off()
+# do the same thing with regression slopes
+betas <- t(betas)
+
+tmp <- betas[73:144,]
+set.seed(20)
+to_move <- rnorm(72, 0, 0.125)
+
+sigs <- apply(tmp, 1 ,sign)
+sigs <- apply(sigs, 2, function(x) abs(sum(x)))
+sigs <- which(sigs == 3)
+
+my_cols <- rep("gray80", 72)
+my_cols[sigs] <- "black"
+my_pch <- rep(21, 72)
+my_pch[sigs] <- 23
+
+
+tiff("./figures/supp_fig1.tiff",
+     height = 5, width = 5, units = "in", res = 600, compression= "lzw")
+par(mar = c(4,6,0.5,0.5))
+plot(1~1, xlim = c(3,10), ylim = c(-0.6, 0.6) ,
+     xlab = "", ylab = "", bty = "l", 
+     xaxt = "n", yaxt = "n", type = "n")
+
+minor.ticks.axis(1,1,mn=3, mx=10 )
+
+axis(2, seq(-0.6,0.5, 0.1), labels = FALSE, tck = -0.025)
+axis(2, seq(-0.6,0.6, 0.1/2), labels = FALSE, tck = -0.025/2)
+
+mtext(sprintf("%.1f", seq(-0.6,0.6, 0.2)), 2, line = 0.7, las = 1,
+      at = seq(-0.6,0.6, 0.2), cex = 1.2)
+
+for(i in 1:nrow(eff_size)){
+  lines(x = c(log(rep(samp_size[i, 2], 2), 2) + to_move[i]),
+        y = tmp[i, -2],
+        col = scales::alpha("black", 0.5),
+        lwd = 1.5
+  )
+}
+
+points(tmp[,2]~ c(log(samp_size[,2], base = 2) + to_move),
+       pch = my_pch,
+       bg = my_cols,
+       cex = 1.2)
+abline(h = 0, lty = 2, lwd = 2)
+
+mtext(expression("Sample size (log"[2]*" scale)"), 1, 
+      line = 2.5, at = 6.5, cex = 1.3  )
+mtext("Species specific change in\nmean lay date to year",
+      2, at = -0, line = 2.9, cex = 1.3)
+
+legend("bottomright", legend = c("Yes", "No"), pch = c(21,23), 
+       pt.bg = c("gray80", "black"), title = "95% CI includes zero",
+       bty = "n")
+
 dev.off()
 
 
-gs <- mm[,grep("^G\\[", colnames(mm))]
-pdf("group_lvl_effects.pdf")
-par(mfrow = c(2, 3))
+tmp <- betas[145:nrow(betas),]
+set.seed(20)
+to_move <- rnorm(72, 0, 0.125)
 
-my_95 <- function(x){x[which(x>quantile(x, probs = c(0.025)) & x<quantile(x, probs = 0.975))]}
-hist(my_95(gs[,1]), xlab = c("estimate"), main = "resident mean")
-hist(my_95(gs[,3]), xlab = c("difference from resident"), main = "short distance intercept")
-hist(my_95(gs[,5]), xlab = c("difference from resident"), main = "long distance intercept")
+sigs <- apply(tmp, 1 ,sign)
+sigs <- apply(sigs, 2, function(x) abs(sum(x)))
+sigs <- which(sigs == 3)
 
-hist(my_95(gs[,2]), xlab = "estimate", main = "resident slope")
-hist(my_95(gs[,4]), xlab = "difference from resident", main = "short distance slope")
-hist(my_95(gs[,6]), xlab = "difference from resident", main = "long distance slope")
+my_cols <- rep("gray80", 72)
+my_cols[sigs] <- "black"
+my_pch <- rep(21, 72)
+my_pch[sigs] <- 23
+
+
+
+
+tiff("./figures/supp_fig2.tiff",
+     height = 5, width = 5, units = "in", res = 600, compression= "lzw")
+par(mar = c(4,6,0.5,0.5))
+plot(1~1, xlim = c(3,10), ylim = c(-1.6, 1.6) ,
+     xlab = "", ylab = "", bty = "l", 
+     xaxt = "n", yaxt = "n", type = "n")
+
+minor.ticks.axis(1,1,mn=3, mx=10 )
+
+axis(2, seq(-1.6,1.6, 0.4), labels = FALSE, tck = -0.025)
+axis(2, seq(-1.6,1.6, 0.4/2), labels = FALSE, tck = -0.025/2)
+
+mtext(sprintf("%.1f", seq(-1.6,1.6, 0.4)), 2, line = 0.7, las = 1,
+      at = seq(-1.6,1.6, 0.4), cex = 1.2)
+
+for(i in 1:nrow(eff_size)){
+  lines(x = c(log(rep(samp_size[i, 2], 2), 2) + to_move[i]),
+        y = tmp[i, -2],
+        col = scales::alpha("black", 0.5),
+        lwd = 1.5
+  )
+}
+
+points(tmp[,2]~ c(log(samp_size[,2], base = 2) + to_move),
+       pch = my_pch,
+       bg = my_cols,
+       cex = 1.2)
+abline(h = 0, lty = 2, lwd = 2)
+
+mtext(expression("Sample size (log"[2]*" scale)"), 1, 
+      line = 2.5, at = 6.5, cex = 1.3  )
+mtext("Species specific change in\nmean lay date to change in global CO2",
+      2, at = -0, line = 2.9, cex = 1.3)
+
+legend("bottomright", legend = c("Yes", "No"), pch = c(21,23), 
+       pt.bg = c("gray80", "black"), title = "95% CI includes zero",
+       bty = "n")
+
 dev.off()
 
-pdf("correlation.pdf")
-hist(my_95(mm[,grep("rho.B\\[1,2", colnames(mm))]), xlab = "correlation coefficient",
-     main = "correlation between intercept and slope")
-dev.off()
+
+plot(tmp[,2] ~ c(log(samp_size[,2], 10) + to_move), ylim = c(-0.6, 0.5),
+     pch = 21, bg = my_cols,
+     bty = "l",
+     xlab = "log10 sample size",
+     ylab = "Year effect")
+for(i in 1:nrow(tmp)){
+  lines(x = c(log(rep(samp_size[i, 2], 2), 10) + to_move[i]),
+        y = tmp[i, -2],
+        lwd = 1.2
+  )
+}
+points(tmp[,2] ~ c(log(samp_size[,2], 10) + to_move),
+       pch = 21, bg = my_cols,cex = 1.15)
+abline(h = 0, lty = 2)
+
+
+tmp <- betas[145:nrow(betas),]
+set.seed(20)
+to_move <- rnorm(72, 0, 0.125)
+
+sigs <- apply(tmp, 1 ,sign)
+sigs <- apply(sigs, 2, function(x) abs(sum(x)))
+sigs <- which(sigs == 3)
+
+my_cols <- rep("gray80", 72)
+my_cols[sigs] <- "black"
+
+plot(tmp[,2] ~ c(log(samp_size[,2], 10) + to_move), ylim = c(-2, 2),
+     pch = 21, bg = my_cols,
+     bty = "l",
+     xlab = "log10 sample size",
+     ylab = "CO2 effect")
+for(i in 1:nrow(tmp)){
+  lines(x = c(log(rep(samp_size[i, 2], 2), 10) + to_move[i]),
+        y = tmp[i, -2],
+        lwd = 1.2
+  )
+}
+points(tmp[,2] ~ c(log(samp_size[,2], 10) + to_move),
+       pch = 21, bg = my_cols,cex = 1.15)
+abline(h = 0, lty = 2)
+

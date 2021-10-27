@@ -6,10 +6,10 @@ model{
 		tau.y[i] <- exp( t0_log + t1_log * mx[i])
 		sigma.y[i] <- 1 / sqrt(tau.y[i])
 	}
-  for(i in 1:(n)){
+  #for(i in 1:(n)){
   # predictions
-    y_pred[i] ~ dt(y.hat[i], tau.y[i], nu)
-  }
+   # y_pred[i] ~ dt(y.hat[i], tau.y[i], nu)
+  #}
 # priors for sd and t distribution
 t0_log ~ dunif(-10, 10) # intercept for sd
 t1_log ~ dunif(-10, 10) # slope for sd
