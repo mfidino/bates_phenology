@@ -11,12 +11,12 @@ Bates, J. M., Fidino, M., Nowak-Boyd, L., Strausberger, B. M., Schmidt, K. A., a
 
 **This repository has 3 R Scripts used for the analysis. They will be in your working directory. These include:**
 
-**bates_2017_calc_climate_residuals.R:** This script reads in the atmospheric CO2 data, fits a linear model to it (with year as the independent variable), and calculates the residuals from the model.
+**calc_climate_residuals.R:** This script reads in the atmospheric CO2 data, fits a linear model to it (with year as the independent variable), and calculates the residuals from the model.
 These residuals are then used in our primary analysis.
 
-**bates_2017_analysis_script.R:** This script fits our robust to outlier model to bird nesting records.
+**analysis_script.R:** This script fits our robust to outlier model to bird nesting records.
 
-**bates_2017_plotting.R:** This script can be used to generate the figures in the manuscript.
+**plotting.R:** This script can be used to generate the figures in the manuscript.
 
 To conduct the analysis the scripts should be ran in the order above.
 
@@ -30,9 +30,9 @@ To conduct the analysis the scripts should be ran in the order above.
 
 **This repository has 2 JAGS models that we used for our analysis. They should be placed within the jags_models sub-folder of the working directory. These include:**
 
-**bates_2017_climate_resid_model.R:** This is the model that is called by `bates_2017_calc_climate_residuals.R`. 
+**climate_resid_model.R:** This is the model that is called by `bates_2017_calc_climate_residuals.R`. 
 
-**bates_2017_robust_t_model.R:** This is the model that is called by `bates_2017_analysis_script.R`. 
+**robust_t_model.R:** This is the model that is called by `bates_2017_analysis_script.R`. 
 
 ---
 
@@ -44,7 +44,7 @@ To conduct the analysis the scripts should be ran in the order above.
 
 **There are three data files within the data sub-folder which are used in this analysis. They include:**
 
-**bates_2017_co2.csv:** This is the global atmospheric CO2 levels per year. 
+**co2.csv:** This is the global atmospheric CO2 levels per year. 
 
 | Column header | Data type | Description |
 |---|---|---|
@@ -63,7 +63,7 @@ Historical CO2 record from the Siple Station ice core. In Trends: A Compendium o
 <br>
 <br>
 
-**bates_2017_migratory_status.csv:** These data relate a species to a specific migratory group as well as its American Ornithological Union (AOU) 4-letter alpha code.
+**migratory_status.csv:** These data relate a species to a specific migratory group as well as its American Ornithological Union (AOU) 4-letter alpha code.
 
 | Column header | Data type | Description |
 |---|---|---|
@@ -76,7 +76,7 @@ Historical CO2 record from the Siple Station ice core. In Trends: A Compendium o
 <br>
 <br>
  
- **bates_2017_bird_lay_dates.csv:** This is the lay date information for midwestern birds that were used in this analysis.
+ **bird_lay_dates.csv:** This is the lay date information for midwestern birds that were used in this analysis.
  
  | Column header | Data type | Description |
 |---|---|---|
