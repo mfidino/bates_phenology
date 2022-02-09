@@ -88,3 +88,10 @@ Historical CO2 record from the Siple Station ice core. In Trends: A Compendium o
 
 
 <div align="center"><img width="150" height="auto" src="./images/rock_dove.png" alt="A drawing of a pigeon that Mason made." /></div>
+
+
+<div align="center"> <h3>images</h3> </div>
+
+---
+
+This folder houses the bird drawings, which were done by Mason Fidino. They are just used in this README file to add a little bit of fun to it.
