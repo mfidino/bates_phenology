@@ -1,7 +1,7 @@
 
 ### A repository for:
 
-Bates, J. M., Fidino, M., Nowak-Boyd, L., Strausberger, B. M., Schmidt, K. A., and Whelan, C. J. (in prep). Climate change affects nesting phenology of midwestern birds: comparison of modern field records with historical records obtained from museum collections.
+Bates, J. M., Fidino, M., Nowak-Boyd, L., Strausberger, B. M., Schmidt, K. A., and Whelan, C. J. (in review). Climate change affects nesting phenology of midwestern birds: comparison of modern field records with historical records obtained from museum collections.
 
 <div align="center"><img width="150" height="auto" src="./images/american_robin.png" alt="A drawing of a robin that Mason made." /></div>
 
